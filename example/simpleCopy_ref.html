@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,600" rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+    <title></title>
+    <style>
+        #vis{
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100px;
+            height:100px;
+            background-color: lightgray;
+            overflow: scroll;
+        }
+        svg{
+            top:0;
+            left:0;
+        }
+        #title{
+            position: fixed;
+            top:5px;
+            left:5px;
+            width: 100%;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 600;
+            font-size: 15pt;
+            /*dominant-baseline*/
+        }
+        #title .titleText{
+            position: relative;
+            top:2px;
+        }
+        #title .subtitle{
+            position: relative;
+            left: 10px;
+            font-weight: 300;
+        }
+        .author{
+            text-align: right;
+            right:15px;
+            top:2px;
+            position: absolute;
+            font-weight: 300;
+            font-size: 15pt;
+        }
+
+    </style>
+
+
+
+</head>
+<body>
+<div id="vis"></div>
+<div id="title"><span class="titleText">Demo of D3RowSlider
+    <span class="subtitle">Very simple indeed</span></span>
+    <button class="btn btn-danger btn-sm" style="position: relative;left: 20px;">do something stupid</button>
+
+    <span class="author">hen</span></div>
+
+<script>
+// after Load
+$(function(){
+
+    var svg = d3.select("#vis").append("svg");
+    svg.append("rect").attr({
+        x:10,
+        y:10,
+        width:100,
+        height:100
+    });
+
+    function resize() {
+        $("#vis").css({
+            "width":($(window).width()),
+            "height":($(window).height()-50)
+        });
+        d3.select("#vis svg").attr({
+            "width":($(window).width()),
+            "height":($(window).height()-55)
+        });
+
+    }
+
+    //register event
+    $(window).resize(function(){
+        resize();
+    });
+
+    //call initially
+    resize();
+
+
+
+
+
+});
+
+</script>
+<script src="bootstrap/js/bootstrap.min.js"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,600" rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+    <script src="../src/D3RowSlider.js"></script>
+
+    <title></title>
+    <style>
+        #vis{
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100px;
+            height:100px;
+            background-color: #f5f5f5;
+            overflow: scroll;
+        }
+        svg{
+            top:0;
+            left:0;
+        }
+        #title{
+            position: fixed;
+            top:0px;
+            width: 100%;
+            height: 50px;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 600;
+            font-size: 15pt;
+            text-indent: 15px;
+            padding: 5px;
+            /*dominant-baseline*/
+        }
+        #title .titleText{
+            position: relative;
+            top:2px;
+        }
+        #title .subtitle{
+            position: relative;
+            /*left: 10px;*/
+            font-weight: 300;
+        }
+        .author{
+            text-align: right;
+            right:15px;
+            top:7px;
+            position: absolute;
+            font-weight: 300;
+            font-size: 15pt;
+        }
+        .sliderGroup .background{
+            fill:lightgrey;
+        }
+        .sliderGroup .extent{
+            fill:black;
+            stroke:black;
+            fill-opacity:.2;
+        }
+
+        .barA{
+            fill:steelblue;
+        }
+        .barB{
+            fill: orange;
+        }
+        .rowID{
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 300;
+            font-size: 9pt;
+        }
+
+
+    </style>
+
+
+
+</head>
+<body>
+<div id="vis"></div>
+<div id="title"><span class="titleText">Demo of D3RowSlider&nbsp;
+    <span class="subtitle">Very simple indeed</span></span>
+    &nbsp;&nbsp;<button class="btn" id="sortByID">sort by ID</button>
+    &nbsp;<button class="btn" id="sortByA">sort by A</button>
+
+    &nbsp;<button class="btn" id="sortByAB">sort by A+B</button>
+    <span class="author">hen</span>
+</div>
+
+<script>
+// after Load
+$(function(){
+
+    var data = Array.apply(null, Array(100000))
+            .map(function (_, i) {
+                return {id:i,a:Math.sin(i/1800*Math.PI) +1.2, b:Math.cos(i/180*Math.PI)+1.2};
+                });
+
+    var svg = d3.select("#vis").append("svg");
+
+    function resize() {
+        $("#vis").css({
+            "width":($(window).width()),
+            "height":($(window).height()-50)
+        });
+        d3.select("#vis svg").attr({
+            "width":($(window).width()),
+            "height":($(window).height()-55)
+        });
+
+    }
+
+
+    //call initially
+    resize();
+
+
+    var rowScale = d3.scale.ordinal()
+            .domain(data.map(function(d){return d.id;}))
+            .rangeBands([0, data.length*10]);
+
+    var EventManager = {};
+
+
+
+    var slider = new D3RowSlider({
+        rowScale:rowScale,
+        eventManager: EventManager,
+        emitSignal:"slider"
+
+    });
+    slider.appendSlider();
+
+
+    var renderRows= function () {
+        var row = svg.selectAll(".row")
+                .data(data.filter(slider.getFilterFunction("id")), function(d){return d.id;});
+        row.exit().remove();
+
+        // --- adding Element to class row
+        var rowEnter = row.enter().append("g").attr({
+            "class":"row"
+        });
+
+        rowEnter.append("rect").attr({
+            "class": "barA"
+        })
+        rowEnter.append("rect").attr({
+            "class": "barB"
+        })
+
+        rowEnter.append("text").attr({
+            "class":"rowID"
+        })
+
+        var offsetY = slider.getDataWindow().minY;
+        // --- changing nodes for row
+        row.attr({
+            "transform":function(d) {
+                return "translate("+5+","+(rowScale(d.id)-offsetY)+")";
+            }
+        })
+
+        row.select(".barA").attr({
+            x:100,
+            width:function(d){return d.a*50;},
+            height: rowScale.rangeBand()-1
+        })
+
+        row.select(".barB").attr({
+            x:function(d){return d.a*50+2+100;},
+            width:function(d){return d.b*50;},
+            height: rowScale.rangeBand()-1
+        })
+
+        row.select(".rowID").attr({
+            x:5,
+            y: rowScale.rangeBand()-1
+        }).text(function(d){return d.id;})
+
+
+    }
+
+
+
+$(EventManager).on("slider", function(){
+    renderRows();
+
+});
+
+renderRows();
+
+
+
+
+
+
+
+
+
+
+
+    //register event
+    $(window).resize(function(){
+        resize();
+        slider.resizeWindow();
+    });
+
+    $("#sortByID").click(function () {
+        data.sort(function(a,b){return d3.ascending(a.id, b.id)});
+        rowScale.domain(data.map(function(d){return d.id;}))
+        renderRows();
+
+    })
+
+    $("#sortByA").click(function () {
+        data.sort(function(a,b){return d3.ascending(a.a, b.a)});
+        rowScale.domain(data.map(function(d){return d.id;}))
+        renderRows();
+
+    })
+    $("#sortByAB").click(function () {
+        data.sort(function(a,b){return d3.ascending(a.a+ a.b, b.a+ b.b)});
+        rowScale.domain(data.map(function(d){return d.id;}))
+        renderRows();
+
+    })
+
+
+//    $('#vis svg').on('mousewheel', function(e){
+//        console.log(e.originalEvent.wheelDeltaY);
+//
+//    })
+
+
+
+
+});
+
+</script>
+<script src="bootstrap/js/bootstrap.min.js"></script>
+
+
+
+</body>
+</html>
