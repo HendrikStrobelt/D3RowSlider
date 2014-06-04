@@ -82,11 +82,10 @@
 </head>
 <body>
 <div id="vis"></div>
-<div id="title"><span class="titleText">Demo of D3RowSlider&nbsp;
-    <span class="subtitle">Very simple indeed</span></span>
+<div id="title"><span class="titleText">D3RowSlider&nbsp;
+    <span class="subtitle">simple demo with 100,000 rows</span></span>
     &nbsp;&nbsp;<button class="btn" id="sortByID">sort by ID</button>
     &nbsp;<button class="btn" id="sortByA">sort by A</button>
-
     &nbsp;<button class="btn" id="sortByAB">sort by A+B</button>
     <span class="author">hen</span>
 </div>
@@ -121,7 +120,7 @@ $(function(){
 
     var rowScale = d3.scale.ordinal()
             .domain(data.map(function(d){return d.id;}))
-            .rangeBands([0, data.length*10]);
+            .rangeBands([0, data.length*20]);
 
     var EventManager = {};
 
@@ -195,15 +194,6 @@ $(EventManager).on("slider", function(){
 renderRows();
 
 
-
-
-
-
-
-
-
-
-
     //register event
     $(window).resize(function(){
         resize();
@@ -229,13 +219,6 @@ renderRows();
         renderRows();
 
     })
-
-
-//    $('#vis svg').on('mousewheel', function(e){
-//        console.log(e.originalEvent.wheelDeltaY);
-//
-//    })
-
 
 
 

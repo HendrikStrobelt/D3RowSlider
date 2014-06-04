@@ -65,16 +65,13 @@ function D3RowSlider(spec){
         mousePos.y = e.pageY;
     });
 
-//    $(window).scroll(function(event){
-////            console.log(mousePos, event);
-//        var scrollAmount = $(window).scrollTop();
-//        console.log(scrollAmount);
-//    });
-
-
     $(this.parentPath).on('mousewheel', function(e){
-        console.log(e.originalEvent.wheelDeltaY);
+        that.scrolled(that, -e.originalEvent.wheelDeltaY)
 
+        e.originalEvent.stopPropagation();
+//        console.log(-e.originalEvent.wheelDeltaY);
+
+        return false;
     })
 
 
@@ -121,7 +118,7 @@ D3RowSlider.prototype.resizeWindow = function() {
 
     var extSave = [this.rowScaleMapping(this.dataWindow.minY),
         this.rowScaleMapping(this.dataWindow.maxY)];
-    console.log(extSave, this.dataWindow, this.rowScaleMapping.domain());
+//    console.log(extSave, this.dataWindow, this.rowScaleMapping.domain());
     this.brush.y(this.yScale).extent(extSave);
 
     d3.select("."+this.sliderGroupName).attr({
@@ -145,9 +142,43 @@ D3RowSlider.prototype.brushmove = function(that){
 
 
     $(that.eventManager).trigger(that.emitSignal);
-    console.log("window:", that.dataWindow);
 
 };
+
+D3RowSlider.prototype.scrolled = function(that, diff){
+    var newMin = that.dataWindow.minY+diff;
+    var newMax = that.dataWindow.maxY+diff;
+
+
+    if (that.rowScaleMapping(newMin)< 0){
+        this.dataWindow.maxY = that.dataWindow.maxY-that.dataWindow.minY
+        that.dataWindow.minY =that.rowScaleMapping.invert(0);
+    }else if (that.rowScaleMapping(newMax)> 1){
+        this.dataWindow.minY = that.rowScaleMapping.invert(1)-that.dataWindow.maxY+that.dataWindow.minY
+        this.dataWindow.maxY = that.rowScaleMapping.invert(1);
+    }else{
+        this.dataWindow.maxY = newMax;
+        that.dataWindow.minY = newMin;
+    }
+    this.dataWindow.minYTest = this.dataWindow.minY-this.rowScale.rangeBand();
+
+    var extSave = [this.rowScaleMapping(this.dataWindow.minY),
+        this.rowScaleMapping(this.dataWindow.maxY)];
+    this.brush.y(this.yScale).extent(extSave);
+
+    d3.select("."+this.sliderGroupName).attr({
+        "transform":"translate("+this.getXPosition()+","+this.sliderOffsetTop+")"
+    })
+        .call(this.brush)
+        .selectAll(".resize").remove();
+
+    $(that.eventManager).trigger(that.emitSignal);
+
+
+}
+
+
+
 
 
 D3RowSlider.prototype.getDataWindow = function(){
